@@ -29,9 +29,14 @@ Kein Session-Auth. Alle Anfragen (außer `POST /auth/user-key`) erfordern `?user
 #### `POST /auth/user-key`
 Erstellt einen neuen UserKey. Kein Query-Parameter erforderlich.
 
+**Request Body**
+```ts
+{ userName: string }
+```
+
 **Response `201`**
 ```json
-{ "id": "uuid" }
+{ "id": "uuid", "userName": "string" }
 ```
 
 ---

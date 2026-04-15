@@ -11,4 +11,9 @@ export class UserKeyRepository {
     const list = (await Storage.get<UserKeyResource[]>(STORAGE_KEYS.userKeys)) ?? [];
     return list.some((entry) => entry.id === personId);
   }
+
+  static async findById(personId: string): Promise<UserKeyResource | undefined> {
+    const list = (await Storage.get<UserKeyResource[]>(STORAGE_KEYS.userKeys)) ?? [];
+    return list.find((entry) => entry.id === personId);
+  }
 }

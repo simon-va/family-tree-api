@@ -7,6 +7,7 @@ import { ResidencesController } from './api/residences/residences.controller.js'
 
 export default new Api()
   // auth
+  .get('/auth/login', AuthController.login)
   .post('/auth/register', AuthController.register)
 
   // persons

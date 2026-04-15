@@ -5,6 +5,17 @@ import { Storage } from '../../utils/storage.js';
 import { STORAGE_KEYS } from '../../utils/storageKeys.js';
 
 export class AuthHandler {
+  static async login(): Promise<UserKeyResource> {
+    const personId = await chayns.person.current.getId();
+    const userKey = await UserKeyRepository.findById(personId);
+
+    if (!userKey) {
+      throw new ApiError(404, 'User not found');
+    }
+
+    return userKey;
+  }
+
   static async register(): Promise<UserKeyResource> {
     const enabled = await Storage.get<boolean>(STORAGE_KEYS.userKeyCreationEnabled);
 

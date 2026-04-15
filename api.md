@@ -26,6 +26,18 @@ Kein Session-Auth. Die Identität wird serverseitig über `chayns.person.current
 
 ### Auth
 
+#### `GET /auth/login`
+Prüft, ob der aktuelle chayns-Nutzer registriert ist. Die personId wird automatisch aus dem chayns-Runtime bezogen.
+
+**Response `200`**
+```json
+{ "id": "<personId>", "firstName": "string", "lastName": "string" }
+```
+
+**Response `404`** — User not found
+
+---
+
 #### `POST /auth/register`
 Registriert den aktuellen chayns-Nutzer. Kein Request Body erforderlich — personId, firstName und lastName werden automatisch aus dem chayns-Runtime bezogen.
 

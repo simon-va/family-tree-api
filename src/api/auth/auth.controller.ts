@@ -4,6 +4,19 @@ import { ApiError, getApiErrorResponse } from '../../utils/apiError.js';
 import { AuthHandler } from './auth.handler.js';
 
 export class AuthController {
+  static async login(): Promise<ApiResponse<UserKeyResource>> {
+    try {
+      const result = await AuthHandler.login();
+      return { status: 200, body: result };
+    } catch (error) {
+      if (error instanceof ApiError) {
+        return getApiErrorResponse(error);
+      }
+
+      throw error;
+    }
+  }
+
   static async register(): Promise<ApiResponse<UserKeyResource>> {
     try {
       const result = await AuthHandler.register();

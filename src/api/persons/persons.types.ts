@@ -1,12 +1,16 @@
 import type {
+  FuzzyDateFieldPrecision,
   FuzzyDatePrecision,
+  FuzzyDateResource,
 } from '../../resources/fuzzy-dates/fuzzyDate.model.js';
 import type { PersonResource } from '../../resources/persons/person.model.js';
 
 export interface CreateFuzzyDateInput {
   precision: FuzzyDatePrecision;
   date: string;
+  datePrecision?: FuzzyDateFieldPrecision;
   dateTo?: string;
+  dateToPrecision?: FuzzyDateFieldPrecision;
   note?: string;
 }
 
@@ -21,6 +25,6 @@ export type CreatePersonInput = Omit<
 export type UpdatePersonInput = CreatePersonInput;
 
 export type PersonDto = Omit<PersonResource, 'userKeyId' | 'birthDateId' | 'deathDateId'> & {
-  birthDate?: CreateFuzzyDateInput;
-  deathDate?: CreateFuzzyDateInput;
+  birthDate?: FuzzyDateResource;
+  deathDate?: FuzzyDateResource;
 };

@@ -7,8 +7,13 @@ export class UserKeyRepository {
     return Storage.add<UserKeyResource>(STORAGE_KEYS.userKeys, userKey);
   }
 
-  static async validate(id: string): Promise<boolean> {
+  static async validate(personId: string): Promise<boolean> {
     const list = (await Storage.get<UserKeyResource[]>(STORAGE_KEYS.userKeys)) ?? [];
-    return list.some((entry) => entry.id === id);
+    return list.some((entry) => entry.id === personId);
+  }
+
+  static async findById(personId: string): Promise<UserKeyResource | undefined> {
+    const list = (await Storage.get<UserKeyResource[]>(STORAGE_KEYS.userKeys)) ?? [];
+    return list.find((entry) => entry.id === personId);
   }
 }

@@ -6,8 +6,8 @@ import { ApiError } from '../../utils/apiError.js';
 import type { CreateResidenceInput, ResidenceDto, UpdateResidenceInput } from './residences.types.js';
 
 export class ResidencesHandler {
-  static async getResidencesByUserKey(userKey: string): Promise<ResidenceDto[]> {
-    const residences = await ResidenceRepository.findByUserKey(userKey);
+  static async getResidencesByUserKey(userKeyId: string): Promise<ResidenceDto[]> {
+    const residences = await ResidenceRepository.findByUserKey(userKeyId);
     const allFuzzyDates = await FuzzyDateRepository.findAll();
     const fuzzyDatesById = Object.fromEntries(allFuzzyDates.map((d) => [d.id, d]));
 
@@ -19,12 +19,12 @@ export class ResidencesHandler {
   }
 
   static async createResidence(
-    userKey: string,
+    userKeyId: string,
     input: CreateResidenceInput,
   ): Promise<ResidenceDto> {
     const person = await PersonRepository.findById(input.personId);
 
-    if (!person || person.userKeyId !== userKey) {
+    if (!person || person.userKeyId !== userKeyId) {
       throw new ApiError(404, 'Person not found');
     }
 
@@ -40,7 +40,7 @@ export class ResidencesHandler {
 
     const data: ResidenceResource = {
       id: crypto.randomUUID(),
-      userKeyId: userKey,
+      userKeyId,
       ...residenceData,
       startDateId: startDate?.id,
       endDateId: endDate?.id,
@@ -62,12 +62,12 @@ export class ResidencesHandler {
 
   static async updateResidence(
     id: string,
-    userKey: string,
+    userKeyId: string,
     input: UpdateResidenceInput,
   ): Promise<ResidenceDto> {
     const existing = await ResidenceRepository.findById(id);
 
-    if (!existing || existing.userKeyId !== userKey) {
+    if (!existing || existing.userKeyId !== userKeyId) {
       throw new ApiError(404, 'Residence not found');
     }
 
@@ -102,7 +102,7 @@ export class ResidencesHandler {
       ...residence
     } = await ResidenceRepository.update({
       id,
-      userKeyId: userKey,
+      userKeyId,
       ...residenceData,
       startDateId: startDate?.id,
       endDateId: endDate?.id,
@@ -111,10 +111,10 @@ export class ResidencesHandler {
     return { ...residence, startDate, endDate };
   }
 
-  static async deleteResidence(id: string, userKey: string): Promise<void> {
+  static async deleteResidence(id: string, userKeyId: string): Promise<void> {
     const residence = await ResidenceRepository.findById(id);
 
-    if (!residence || residence.userKeyId !== userKey) {
+    if (!residence || residence.userKeyId !== userKeyId) {
       throw new ApiError(404, 'Residence not found');
     }
 

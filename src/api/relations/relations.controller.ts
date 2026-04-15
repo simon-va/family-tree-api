@@ -5,21 +5,15 @@ import { RelationsHandler } from './relations.handler.js';
 import type { CreateRelationInput, RelationDto, UpdateRelationInput } from './relations.types.js';
 
 export class RelationsController {
-  static async getRelations(
-    ctx: ApiRequest<undefined, { userKey: string }>,
-  ): Promise<ApiResponse<RelationDto[]>> {
-    const userKey = ctx.query?.userKey;
+  static async getRelations(): Promise<ApiResponse<RelationDto[]>> {
+    const userKeyId = await chayns.person.current.getId();
 
-    if (!userKey) {
-      return { status: 400, body: { message: 'No userKey in query parameters provided' } };
-    }
-
-    if (!await UserKeyRepository.validate(userKey)) {
-      return { status: 401, body: { message: 'Invalid userKey' } };
+    if (!await UserKeyRepository.validate(userKeyId)) {
+      return { status: 401, body: { message: 'Not registered' } };
     }
 
     try {
-      const relations = await RelationsHandler.getRelationsByUserKey(userKey);
+      const relations = await RelationsHandler.getRelationsByUserKey(userKeyId);
       return { status: 200, body: relations };
     } catch (error) {
       if (error instanceof ApiError) {
@@ -31,17 +25,13 @@ export class RelationsController {
   }
 
   static async addRelation(
-    ctx: ApiRequest<CreateRelationInput, { userKey: string }>,
+    ctx: ApiRequest<CreateRelationInput>,
   ): Promise<ApiResponse<RelationDto>> {
-    const userKey = ctx.query?.userKey;
+    const userKeyId = await chayns.person.current.getId();
     const body = ctx.body;
 
-    if (!userKey) {
-      return { status: 400, body: { message: 'No userKey in query parameters provided' } };
-    }
-
-    if (!await UserKeyRepository.validate(userKey)) {
-      return { status: 401, body: { message: 'Invalid userKey' } };
+    if (!await UserKeyRepository.validate(userKeyId)) {
+      return { status: 401, body: { message: 'Not registered' } };
     }
 
     if (!body) {
@@ -49,7 +39,7 @@ export class RelationsController {
     }
 
     try {
-      const relation = await RelationsHandler.createRelation(userKey, body);
+      const relation = await RelationsHandler.createRelation(userKeyId, body);
       return { status: 201, body: relation };
     } catch (error) {
       if (error instanceof ApiError) {
@@ -61,22 +51,18 @@ export class RelationsController {
   }
 
   static async updateRelation(
-    ctx: ApiRequest<UpdateRelationInput, { userKey: string }, { id: string }>,
+    ctx: ApiRequest<UpdateRelationInput, undefined, { id: string }>,
   ): Promise<ApiResponse<RelationDto>> {
     const id = ctx.params?.id;
-    const userKey = ctx.query?.userKey;
+    const userKeyId = await chayns.person.current.getId();
     const body = ctx.body;
 
     if (!id) {
       return { status: 400, body: { message: 'No id in params provided' } };
     }
 
-    if (!userKey) {
-      return { status: 400, body: { message: 'No userKey in query parameters provided' } };
-    }
-
-    if (!await UserKeyRepository.validate(userKey)) {
-      return { status: 401, body: { message: 'Invalid userKey' } };
+    if (!await UserKeyRepository.validate(userKeyId)) {
+      return { status: 401, body: { message: 'Not registered' } };
     }
 
     if (!body) {
@@ -84,7 +70,7 @@ export class RelationsController {
     }
 
     try {
-      const result = await RelationsHandler.updateRelation(id, userKey, body);
+      const result = await RelationsHandler.updateRelation(id, userKeyId, body);
       return { status: 200, body: result };
     } catch (error) {
       if (error instanceof ApiError) {
@@ -96,25 +82,21 @@ export class RelationsController {
   }
 
   static async deleteRelation(
-    ctx: ApiRequest<undefined, { userKey: string }, { id: string }>,
+    ctx: ApiRequest<undefined, undefined, { id: string }>,
   ): Promise<ApiResponse<void>> {
     const id = ctx.params?.id;
-    const userKey = ctx.query?.userKey;
+    const userKeyId = await chayns.person.current.getId();
 
     if (!id) {
       return { status: 400, body: { message: 'No id in params provided' } };
     }
 
-    if (!userKey) {
-      return { status: 400, body: { message: 'No userKey in query parameters provided' } };
-    }
-
-    if (!await UserKeyRepository.validate(userKey)) {
-      return { status: 401, body: { message: 'Invalid userKey' } };
+    if (!await UserKeyRepository.validate(userKeyId)) {
+      return { status: 401, body: { message: 'Not registered' } };
     }
 
     try {
-      await RelationsHandler.deleteRelation(id, userKey);
+      await RelationsHandler.deleteRelation(id, userKeyId);
       return { status: 204 };
     } catch (error) {
       if (error instanceof ApiError) {

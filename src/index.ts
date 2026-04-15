@@ -6,8 +6,9 @@ import { RelationsController } from './api/relations/relations.controller.js';
 import { ResidencesController } from './api/residences/residences.controller.js';
 
 export default new Api()
-  // auth 
-  .post('/auth/user-key', AuthController.generateUserKey)
+  // auth
+  .get('/auth/login', AuthController.login)
+  .post('/auth/register', AuthController.register)
 
   // persons
   .get('/persons', PersonsController.getPersons)

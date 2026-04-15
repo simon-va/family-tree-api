@@ -5,8 +5,8 @@ import { ApiError } from '../../utils/apiError.js';
 import type { CreatePersonInput, PersonDto, UpdatePersonInput } from './persons.types.js';
 
 export class PersonsHandler {
-  static async getPersonsByUserKey(userKey: string): Promise<PersonDto[]> {
-    const persons = await PersonRepository.findByUserKey(userKey);
+  static async getPersonsByUserKey(userKeyId: string): Promise<PersonDto[]> {
+    const persons = await PersonRepository.findByUserKey(userKeyId);
     const allFuzzyDates = await FuzzyDateRepository.findAll();
     const fuzzyDatesById = Object.fromEntries(allFuzzyDates.map((d) => [d.id, d]));
 
@@ -17,7 +17,7 @@ export class PersonsHandler {
     }));
   }
 
-  static async createPerson(userKey: string, input: CreatePersonInput): Promise<PersonDto> {
+  static async createPerson(userKeyId: string, input: CreatePersonInput): Promise<PersonDto> {
     const birthDate = input.birthDate
       ? await FuzzyDateRepository.save({ id: crypto.randomUUID(), ...input.birthDate })
       : undefined;
@@ -30,7 +30,7 @@ export class PersonsHandler {
 
     const data: PersonResource = {
       id: crypto.randomUUID(),
-      userKeyId: userKey,
+      userKeyId,
       ...personData,
       birthDateId: birthDate?.id,
       deathDateId: deathDate?.id,
@@ -52,12 +52,12 @@ export class PersonsHandler {
 
   static async updatePerson(
     id: string,
-    userKey: string,
+    userKeyId: string,
     input: UpdatePersonInput,
   ): Promise<PersonDto> {
     const existing = await PersonRepository.findById(id);
 
-    if (!existing || existing.userKeyId !== userKey) {
+    if (!existing || existing.userKeyId !== userKeyId) {
       throw new ApiError(404, 'Person not found');
     }
 
@@ -92,7 +92,7 @@ export class PersonsHandler {
       ...person
     } = await PersonRepository.update({
       id,
-      userKeyId: userKey,
+      userKeyId,
       ...personData,
       birthDateId: birthDate?.id,
       deathDateId: deathDate?.id,
@@ -101,10 +101,10 @@ export class PersonsHandler {
     return { ...person, birthDate, deathDate };
   }
 
-  static async deletePerson(id: string, userKey: string): Promise<void> {
+  static async deletePerson(id: string, userKeyId: string): Promise<void> {
     const person = await PersonRepository.findById(id);
 
-    if (!person || person.userKeyId !== userKey) {
+    if (!person || person.userKeyId !== userKeyId) {
       throw new ApiError(404, 'Person not found');
     }
 

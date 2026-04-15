@@ -5,21 +5,15 @@ import { PersonsHandler } from './persons.handler.js';
 import type { CreatePersonInput, PersonDto, UpdatePersonInput } from './persons.types.js';
 
 export class PersonsController {
-  static async getPersons(
-    ctx: ApiRequest<undefined, { userKey: string }>,
-  ): Promise<ApiResponse<PersonDto[]>> {
-    const userKey = ctx.query?.userKey;
+  static async getPersons(): Promise<ApiResponse<PersonDto[]>> {
+    const userKeyId = await chayns.person.current.getId();
 
-    if (!userKey) {
-      return { status: 400, body: { message: 'No userKey in query parameters provided' } };
-    }
-
-    if (!await UserKeyRepository.validate(userKey)) {
-      return { status: 401, body: { message: 'Invalid userKey' } };
+    if (!await UserKeyRepository.validate(userKeyId)) {
+      return { status: 401, body: { message: 'Not registered' } };
     }
 
     try {
-      const persons = await PersonsHandler.getPersonsByUserKey(userKey);
+      const persons = await PersonsHandler.getPersonsByUserKey(userKeyId);
       return { status: 200, body: persons };
     } catch (error) {
       if (error instanceof ApiError) {
@@ -31,17 +25,13 @@ export class PersonsController {
   }
 
   static async addPerson(
-    ctx: ApiRequest<CreatePersonInput, { userKey: string }>,
+    ctx: ApiRequest<CreatePersonInput>,
   ): Promise<ApiResponse<PersonDto>> {
-    const userKey = ctx.query?.userKey;
+    const userKeyId = await chayns.person.current.getId();
     const body = ctx.body;
 
-    if (!userKey) {
-      return { status: 400, body: { message: 'No userKey in query parameters provided' } };
-    }
-
-    if (!await UserKeyRepository.validate(userKey)) {
-      return { status: 401, body: { message: 'Invalid userKey' } };
+    if (!await UserKeyRepository.validate(userKeyId)) {
+      return { status: 401, body: { message: 'Not registered' } };
     }
 
     if (!body) {
@@ -49,7 +39,7 @@ export class PersonsController {
     }
 
     try {
-      const person = await PersonsHandler.createPerson(userKey, body);
+      const person = await PersonsHandler.createPerson(userKeyId, body);
       return { status: 201, body: person };
     } catch (error) {
       if (error instanceof ApiError) {
@@ -61,22 +51,18 @@ export class PersonsController {
   }
 
   static async updatePerson(
-    ctx: ApiRequest<UpdatePersonInput, { userKey: string }, { id: string }>,
+    ctx: ApiRequest<UpdatePersonInput, undefined, { id: string }>,
   ): Promise<ApiResponse<PersonDto>> {
     const id = ctx.params?.id;
-    const userKey = ctx.query?.userKey;
+    const userKeyId = await chayns.person.current.getId();
     const body = ctx.body;
 
     if (!id) {
       return { status: 400, body: { message: 'No id in params provided' } };
     }
 
-    if (!userKey) {
-      return { status: 400, body: { message: 'No userKey in query parameters provided' } };
-    }
-
-    if (!await UserKeyRepository.validate(userKey)) {
-      return { status: 401, body: { message: 'Invalid userKey' } };
+    if (!await UserKeyRepository.validate(userKeyId)) {
+      return { status: 401, body: { message: 'Not registered' } };
     }
 
     if (!body) {
@@ -84,7 +70,7 @@ export class PersonsController {
     }
 
     try {
-      const result = await PersonsHandler.updatePerson(id, userKey, body);
+      const result = await PersonsHandler.updatePerson(id, userKeyId, body);
       return { status: 200, body: result };
     } catch (error) {
       if (error instanceof ApiError) {
@@ -96,25 +82,21 @@ export class PersonsController {
   }
 
   static async deletePerson(
-    ctx: ApiRequest<undefined, { userKey: string }, { id: string }>,
+    ctx: ApiRequest<undefined, undefined, { id: string }>,
   ): Promise<ApiResponse<void>> {
     const id = ctx.params?.id;
-    const userKey = ctx.query?.userKey;
+    const userKeyId = await chayns.person.current.getId();
 
     if (!id) {
       return { status: 400, body: { message: 'No id in params provided' } };
     }
 
-    if (!userKey) {
-      return { status: 400, body: { message: 'No userKey in query parameters provided' } };
-    }
-
-    if (!await UserKeyRepository.validate(userKey)) {
-      return { status: 401, body: { message: 'Invalid userKey' } };
+    if (!await UserKeyRepository.validate(userKeyId)) {
+      return { status: 401, body: { message: 'Not registered' } };
     }
 
     try {
-      await PersonsHandler.deletePerson(id, userKey);
+      await PersonsHandler.deletePerson(id, userKeyId);
       return { status: 204 };
     } catch (error) {
       if (error instanceof ApiError) {

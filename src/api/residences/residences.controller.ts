@@ -5,21 +5,15 @@ import { ResidencesHandler } from './residences.handler.js';
 import type { CreateResidenceInput, ResidenceDto, UpdateResidenceInput } from './residences.types.js';
 
 export class ResidencesController {
-  static async getResidences(
-    ctx: ApiRequest<undefined, { userKey: string }>,
-  ): Promise<ApiResponse<ResidenceDto[]>> {
-    const userKey = ctx.query?.userKey;
+  static async getResidences(): Promise<ApiResponse<ResidenceDto[]>> {
+    const userKeyId = await chayns.person.current.getId();
 
-    if (!userKey) {
-      return { status: 400, body: { message: 'No userKey in query parameters provided' } };
-    }
-
-    if (!await UserKeyRepository.validate(userKey)) {
-      return { status: 401, body: { message: 'Invalid userKey' } };
+    if (!await UserKeyRepository.validate(userKeyId)) {
+      return { status: 401, body: { message: 'Not registered' } };
     }
 
     try {
-      const residences = await ResidencesHandler.getResidencesByUserKey(userKey);
+      const residences = await ResidencesHandler.getResidencesByUserKey(userKeyId);
       return { status: 200, body: residences };
     } catch (error) {
       if (error instanceof ApiError) {
@@ -31,17 +25,13 @@ export class ResidencesController {
   }
 
   static async addResidence(
-    ctx: ApiRequest<CreateResidenceInput, { userKey: string }>,
+    ctx: ApiRequest<CreateResidenceInput>,
   ): Promise<ApiResponse<ResidenceDto>> {
-    const userKey = ctx.query?.userKey;
+    const userKeyId = await chayns.person.current.getId();
     const body = ctx.body;
 
-    if (!userKey) {
-      return { status: 400, body: { message: 'No userKey in query parameters provided' } };
-    }
-
-    if (!await UserKeyRepository.validate(userKey)) {
-      return { status: 401, body: { message: 'Invalid userKey' } };
+    if (!await UserKeyRepository.validate(userKeyId)) {
+      return { status: 401, body: { message: 'Not registered' } };
     }
 
     if (!body) {
@@ -49,7 +39,7 @@ export class ResidencesController {
     }
 
     try {
-      const result = await ResidencesHandler.createResidence(userKey, body);
+      const result = await ResidencesHandler.createResidence(userKeyId, body);
       return { status: 201, body: result };
     } catch (error) {
       if (error instanceof ApiError) {
@@ -60,22 +50,18 @@ export class ResidencesController {
   }
 
   static async updateResidence(
-    ctx: ApiRequest<UpdateResidenceInput, { userKey: string }, { id: string }>,
+    ctx: ApiRequest<UpdateResidenceInput, undefined, { id: string }>,
   ): Promise<ApiResponse<ResidenceDto>> {
     const id = ctx.params?.id;
-    const userKey = ctx.query?.userKey;
+    const userKeyId = await chayns.person.current.getId();
     const body = ctx.body;
 
     if (!id) {
       return { status: 400, body: { message: 'No id in params provided' } };
     }
 
-    if (!userKey) {
-      return { status: 400, body: { message: 'No userKey in query parameters provided' } };
-    }
-
-    if (!await UserKeyRepository.validate(userKey)) {
-      return { status: 401, body: { message: 'Invalid userKey' } };
+    if (!await UserKeyRepository.validate(userKeyId)) {
+      return { status: 401, body: { message: 'Not registered' } };
     }
 
     if (!body) {
@@ -83,7 +69,7 @@ export class ResidencesController {
     }
 
     try {
-      const result = await ResidencesHandler.updateResidence(id, userKey, body);
+      const result = await ResidencesHandler.updateResidence(id, userKeyId, body);
       return { status: 200, body: result };
     } catch (error) {
       if (error instanceof ApiError) {
@@ -94,25 +80,21 @@ export class ResidencesController {
   }
 
   static async deleteResidence(
-    ctx: ApiRequest<undefined, { userKey: string }, { id: string }>,
+    ctx: ApiRequest<undefined, undefined, { id: string }>,
   ): Promise<ApiResponse<void>> {
     const id = ctx.params?.id;
-    const userKey = ctx.query?.userKey;
+    const userKeyId = await chayns.person.current.getId();
 
     if (!id) {
       return { status: 400, body: { message: 'No id in params provided' } };
     }
 
-    if (!userKey) {
-      return { status: 400, body: { message: 'No userKey in query parameters provided' } };
-    }
-
-    if (!await UserKeyRepository.validate(userKey)) {
-      return { status: 401, body: { message: 'Invalid userKey' } };
+    if (!await UserKeyRepository.validate(userKeyId)) {
+      return { status: 401, body: { message: 'Not registered' } };
     }
 
     try {
-      await ResidencesHandler.deleteResidence(id, userKey);
+      await ResidencesHandler.deleteResidence(id, userKeyId);
       return { status: 204 };
     } catch (error) {
       if (error instanceof ApiError) {

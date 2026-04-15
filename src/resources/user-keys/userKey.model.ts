@@ -1,4 +1,5 @@
 export interface UserKeyResource {
   id: string;
-  userName: string;
+  firstName: string;
+  lastName: string;
 }

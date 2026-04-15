@@ -5,8 +5,8 @@ import { ApiError } from '../../utils/apiError.js';
 import type { CreateRelationInput, RelationDto, UpdateRelationInput } from './relations.types.js';
 
 export class RelationsHandler {
-  static async getRelationsByUserKey(userKey: string): Promise<RelationDto[]> {
-    const relations = await RelationRepository.findByUserKey(userKey);
+  static async getRelationsByUserKey(userKeyId: string): Promise<RelationDto[]> {
+    const relations = await RelationRepository.findByUserKey(userKeyId);
     const allFuzzyDates = await FuzzyDateRepository.findAll();
     const fuzzyDatesById = Object.fromEntries(allFuzzyDates.map((d) => [d.id, d]));
 
@@ -17,7 +17,7 @@ export class RelationsHandler {
     }));
   }
 
-  static async createRelation(userKey: string, input: CreateRelationInput): Promise<RelationDto> {
+  static async createRelation(userKeyId: string, input: CreateRelationInput): Promise<RelationDto> {
     const startDate = input.startDate
       ? await FuzzyDateRepository.save({ id: crypto.randomUUID(), ...input.startDate })
       : undefined;
@@ -30,7 +30,7 @@ export class RelationsHandler {
 
     const data: RelationshipResource = {
       id: crypto.randomUUID(),
-      userKeyId: userKey,
+      userKeyId,
       ...relationData,
       startDateId: startDate?.id,
       endDateId: endDate?.id,
@@ -52,12 +52,12 @@ export class RelationsHandler {
 
   static async updateRelation(
     id: string,
-    userKey: string,
+    userKeyId: string,
     input: UpdateRelationInput,
   ): Promise<RelationDto> {
     const existing = await RelationRepository.findById(id);
 
-    if (!existing || existing.userKeyId !== userKey) {
+    if (!existing || existing.userKeyId !== userKeyId) {
       throw new ApiError(404, 'Relation not found');
     }
 
@@ -92,7 +92,7 @@ export class RelationsHandler {
       ...relation
     } = await RelationRepository.update({
       id,
-      userKeyId: userKey,
+      userKeyId,
       ...relationData,
       startDateId: startDate?.id,
       endDateId: endDate?.id,
@@ -101,10 +101,10 @@ export class RelationsHandler {
     return { ...relation, startDate, endDate };
   }
 
-  static async deleteRelation(id: string, userKey: string): Promise<void> {
+  static async deleteRelation(id: string, userKeyId: string): Promise<void> {
     const relation = await RelationRepository.findById(id);
 
-    if (!relation || relation.userKeyId !== userKey) {
+    if (!relation || relation.userKeyId !== userKeyId) {
       throw new ApiError(404, 'Relation not found');
     }
 

@@ -5,14 +5,21 @@ import { Storage } from '../../utils/storage.js';
 import { STORAGE_KEYS } from '../../utils/storageKeys.js';
 
 export class AuthHandler {
-  static async generateUserKey(userName: string): Promise<UserKeyResource> {
+  static async register(): Promise<UserKeyResource> {
     const enabled = await Storage.get<boolean>(STORAGE_KEYS.userKeyCreationEnabled);
 
     if (enabled === false) {
-      throw new ApiError(403, 'User key creation is disabled');
+      throw new ApiError(403, 'Registration is disabled');
     }
 
-    const userKey: UserKeyResource = { id: crypto.randomUUID(), userName };
+    const userKeyId = await chayns.person.current.getId();
+
+    if (await UserKeyRepository.validate(userKeyId)) {
+      throw new ApiError(409, 'Already registered');
+    }
+
+    const { firstName, lastName } = await chayns.person.getPublicInformation(userKeyId);
+    const userKey: UserKeyResource = { id: userKeyId, firstName, lastName };
     return UserKeyRepository.save(userKey);
   }
 }

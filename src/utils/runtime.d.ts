@@ -8,6 +8,14 @@ declare namespace chayns {
     function set(key: string, value: unknown): Promise<void>;
     function remove(key: string): Promise<void>;
   }
+
+  namespace person {
+    namespace current {
+      function getId(): Promise<string>;
+    }
+
+    function getPublicInformation(id: string): Promise<{ firstName: string; lastName: string }>;
+  }
 }
 
 declare module '@chayns-codes/http' {

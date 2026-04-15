@@ -1,3 +1,6 @@
+import { FuzzyDateRepository } from '../fuzzy-dates/fuzzyDate.repository.js';
+import { RelationRepository } from '../relations/relation.repository.js';
+import { ResidenceRepository } from '../residences/residence.repository.js';
 import { Storage } from '../../utils/storage.js';
 import { STORAGE_KEYS } from '../../utils/storageKeys.js';
 import type { PersonResource } from './person.model.js';
@@ -26,6 +29,22 @@ export class PersonRepository {
   }
 
   static async delete(id: string): Promise<void> {
+    const person = await PersonRepository.findById(id);
+    if (person) {
+      if (person.birthDateId) await FuzzyDateRepository.delete(person.birthDateId);
+      if (person.deathDateId) await FuzzyDateRepository.delete(person.deathDateId);
+    }
+
+    const allResidences = await ResidenceRepository.findAll();
+    for (const r of allResidences.filter((r) => r.personId === id)) {
+      await ResidenceRepository.delete(r.id);
+    }
+
+    const allRelations = await RelationRepository.findAll();
+    for (const r of allRelations.filter((r) => r.personAId === id || r.personBId === id)) {
+      await RelationRepository.delete(r.id);
+    }
+
     return Storage.remove<PersonResource>(STORAGE_KEYS.persons, id);
   }
 }

@@ -1,3 +1,4 @@
+import { FuzzyDateRepository } from '../fuzzy-dates/fuzzyDate.repository.js';
 import { Storage } from '../../utils/storage.js';
 import { STORAGE_KEYS } from '../../utils/storageKeys.js';
 import type { ResidenceResource } from './residence.model.js';
@@ -26,6 +27,11 @@ export class ResidenceRepository {
   }
 
   static async delete(id: string): Promise<void> {
+    const residence = await ResidenceRepository.findById(id);
+    if (residence) {
+      if (residence.startDateId) await FuzzyDateRepository.delete(residence.startDateId);
+      if (residence.endDateId) await FuzzyDateRepository.delete(residence.endDateId);
+    }
     return Storage.remove<ResidenceResource>(STORAGE_KEYS.residences, id);
   }
 }

@@ -8,6 +8,8 @@ export interface ResidenceResource {
   country?: string;
   street?: string;
   notes?: string;
+  lat?: number;
+  lng?: number;
   startDateId?: string;
   endDateId?: string;
 }

@@ -32,6 +32,12 @@ export class ResidenceRepository {
       if (residence.startDateId) await FuzzyDateRepository.delete(residence.startDateId);
       if (residence.endDateId) await FuzzyDateRepository.delete(residence.endDateId);
     }
-    return Storage.remove<ResidenceResource>(STORAGE_KEYS.residences, id);
+    await Storage.remove<ResidenceResource>(STORAGE_KEYS.residences, id);
+
+    const all = await ResidenceRepository.findAll();
+    const referencing = all.filter((r) => r.movedToResidenceId === id);
+    for (const r of referencing) {
+      await ResidenceRepository.update({ ...r, movedToResidenceId: undefined });
+    }
   }
 }

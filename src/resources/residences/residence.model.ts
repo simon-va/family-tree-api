@@ -12,4 +12,5 @@ export interface ResidenceResource {
   lng?: number;
   startDateId?: string;
   endDateId?: string;
+  movedToResidenceId?: string;
 }

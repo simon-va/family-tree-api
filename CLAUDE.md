@@ -55,6 +55,8 @@ Three distinct type shapes per resource:
 
 `Storage` in [src/utils/storage.ts](src/utils/storage.ts) provides generic typed list operations (`get`, `set`, `add`, `remove`, `update`) on top of `chayns.storage`. All resources are stored as arrays under keys defined in `STORAGE_KEYS`. Every stored item must have an `id: string` field.
 
+**Sequential writes are required.** The storage behaves like `localStorage` — every write operation reads the current list, modifies it, and writes the entire list back. Running multiple write operations in parallel (e.g. via `Promise.all`) can cause race conditions where an older read overwrites a newer write. Always use a `for...of` loop with `await` when performing multiple writes to the same storage key.
+
 ### Auth / multi-tenancy
 
 There is no session auth. A `userKey` (UUID) is generated via `POST /auth/user-key` and passed as a query parameter (`?userKey=...`) on all subsequent requests. All person data is scoped to this key via `userKeyId` on the `PersonResource`.
